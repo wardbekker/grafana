@@ -13,6 +13,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/grafana/grafana/pkg/infra/log"
+	"github.com/grafana/grafana/pkg/registry"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
 )
@@ -20,6 +21,20 @@ import (
 var (
 	logger = log.New("social")
 )
+
+func init() {
+	registry.RegisterService(&SocialService{})
+}
+
+type SocialService struct {
+	Cfg       *setting.Cfg `inject:""`
+	SocialMap map[string]SocialConnector
+}
+
+func (ss *SocialService) Init() error {
+	ss.NewOAuthService(ss.Cfg)
+	return nil
+}
 
 type BasicUserInfo struct {
 	Id      string
@@ -79,7 +94,7 @@ func newSocialBase(name string, config *oauth2.Config, info *setting.OAuthInfo) 
 	}
 }
 
-func NewOAuthService(cfg *setting.Cfg) {
+func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
 	setting.OAuthService = &setting.OAuther{}
 	setting.OAuthService.OAuthInfos = make(map[string]*setting.OAuthInfo)
 
@@ -137,7 +152,7 @@ func NewOAuthService(cfg *setting.Cfg) {
 
 		// GitHub.
 		if name == "github" {
-			SocialMap["github"] = &SocialGithub{
+			ss.SocialMap["github"] = &SocialGithub{
 				SocialBase:           newSocialBase(name, &config, info),
 				apiUrl:               info.ApiUrl,
 				teamIds:              sec.Key("team_ids").Ints(","),
@@ -147,7 +162,7 @@ func NewOAuthService(cfg *setting.Cfg) {
 
 		// GitLab.
 		if name == "gitlab" {
-			SocialMap["gitlab"] = &SocialGitlab{
+			ss.SocialMap["gitlab"] = &SocialGitlab{
 				SocialBase:    newSocialBase(name, &config, info),
 				apiUrl:        info.ApiUrl,
 				allowedGroups: util.SplitString(sec.Key("allowed_groups").String()),
@@ -156,7 +171,7 @@ func NewOAuthService(cfg *setting.Cfg) {
 
 		// Google.
 		if name == "google" {
-			SocialMap["google"] = &SocialGoogle{
+			ss.SocialMap["google"] = &SocialGoogle{
 				SocialBase:   newSocialBase(name, &config, info),
 				hostedDomain: info.HostedDomain,
 				apiUrl:       info.ApiUrl,
@@ -185,7 +200,7 @@ func NewOAuthService(cfg *setting.Cfg) {
 
 		// Generic - Uses the same scheme as GitHub.
 		if name == "generic_oauth" {
-			SocialMap["generic_oauth"] = &SocialGenericOAuth{
+			ss.SocialMap["generic_oauth"] = &SocialGenericOAuth{
 				SocialBase:           newSocialBase(name, &config, info),
 				apiUrl:               info.ApiUrl,
 				emailAttributeName:   info.EmailAttributeName,
@@ -213,7 +228,7 @@ func NewOAuthService(cfg *setting.Cfg) {
 				Scopes:      info.Scopes,
 			}
 
-			SocialMap[grafanaCom] = &SocialGrafanaCom{
+			ss.SocialMap[grafanaCom] = &SocialGrafanaCom{
 				SocialBase:           newSocialBase(name, &config, info),
 				url:                  cfg.GrafanaComURL,
 				allowedOrganizations: util.SplitString(sec.Key("allowed_organizations").String()),
