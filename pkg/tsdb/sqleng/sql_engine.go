@@ -295,6 +295,13 @@ func (e *dataPlugin) executeQuery(query plugins.DataSubQuery, wg *sync.WaitGroup
 			}
 		}
 
+		if qm.metricIndex >= 0 {
+			field := frame.Fields[qm.metricIndex]
+			if field.Name != "" && frame.Name != "" {
+				field.Name = ""
+			}
+		}
+
 		tsSchema := frame.TimeSeriesSchema()
 		if tsSchema.Type == data.TimeSeriesTypeLong {
 			var err error
