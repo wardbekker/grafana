@@ -23,15 +23,15 @@ var (
 )
 
 func init() {
-	registry.RegisterService(&SocialService{})
+	registry.RegisterService(&Service{})
 }
 
-type SocialService struct {
+type Service struct {
 	Cfg       *setting.Cfg `inject:""`
-	SocialMap map[string]SocialConnector
+	socialMap map[string]SocialConnector
 }
 
-func (ss *SocialService) Init() error {
+func (ss *Service) Init() error {
 	ss.NewOAuthService(ss.Cfg)
 	return nil
 }
@@ -94,7 +94,7 @@ func newSocialBase(name string, config *oauth2.Config, info *setting.OAuthInfo) 
 	}
 }
 
-func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
+func (ss *Service) NewOAuthService(cfg *setting.Cfg) {
 	setting.OAuthService = &setting.OAuther{}
 	setting.OAuthService.OAuthInfos = make(map[string]*setting.OAuthInfo)
 
@@ -152,7 +152,7 @@ func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
 
 		// GitHub.
 		if name == "github" {
-			ss.SocialMap["github"] = &SocialGithub{
+			ss.socialMap["github"] = &SocialGithub{
 				SocialBase:           newSocialBase(name, &config, info),
 				apiUrl:               info.ApiUrl,
 				teamIds:              sec.Key("team_ids").Ints(","),
@@ -162,7 +162,7 @@ func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
 
 		// GitLab.
 		if name == "gitlab" {
-			ss.SocialMap["gitlab"] = &SocialGitlab{
+			ss.socialMap["gitlab"] = &SocialGitlab{
 				SocialBase:    newSocialBase(name, &config, info),
 				apiUrl:        info.ApiUrl,
 				allowedGroups: util.SplitString(sec.Key("allowed_groups").String()),
@@ -171,7 +171,7 @@ func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
 
 		// Google.
 		if name == "google" {
-			ss.SocialMap["google"] = &SocialGoogle{
+			ss.socialMap["google"] = &SocialGoogle{
 				SocialBase:   newSocialBase(name, &config, info),
 				hostedDomain: info.HostedDomain,
 				apiUrl:       info.ApiUrl,
@@ -180,7 +180,7 @@ func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
 
 		// AzureAD.
 		if name == "azuread" {
-			SocialMap["azuread"] = &SocialAzureAD{
+			ss.socialMap["azuread"] = &SocialAzureAD{
 				SocialBase:        newSocialBase(name, &config, info),
 				allowedGroups:     util.SplitString(sec.Key("allowed_groups").String()),
 				autoAssignOrgRole: cfg.AutoAssignOrgRole,
@@ -189,7 +189,7 @@ func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
 
 		// Okta
 		if name == "okta" {
-			SocialMap["okta"] = &SocialOkta{
+			ss.socialMap["okta"] = &SocialOkta{
 				SocialBase:          newSocialBase(name, &config, info),
 				apiUrl:              info.ApiUrl,
 				allowedGroups:       util.SplitString(sec.Key("allowed_groups").String()),
@@ -200,7 +200,7 @@ func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
 
 		// Generic - Uses the same scheme as GitHub.
 		if name == "generic_oauth" {
-			ss.SocialMap["generic_oauth"] = &SocialGenericOAuth{
+			ss.socialMap["generic_oauth"] = &SocialGenericOAuth{
 				SocialBase:           newSocialBase(name, &config, info),
 				apiUrl:               info.ApiUrl,
 				emailAttributeName:   info.EmailAttributeName,
@@ -228,7 +228,7 @@ func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
 				Scopes:      info.Scopes,
 			}
 
-			ss.SocialMap[grafanaCom] = &SocialGrafanaCom{
+			ss.socialMap[grafanaCom] = &SocialGrafanaCom{
 				SocialBase:           newSocialBase(name, &config, info),
 				url:                  cfg.GrafanaComURL,
 				allowedOrganizations: util.SplitString(sec.Key("allowed_organizations").String()),
@@ -238,10 +238,10 @@ func (ss *SocialService) NewOAuthService(cfg *setting.Cfg) {
 }
 
 // GetOAuthProviders returns available oauth providers and if they're enabled or not
-func (ss *SocialService) GetOAuthProviders(cfg *setting.Cfg) map[string]bool {
+func (ss *Service) GetOAuthProviders() map[string]bool {
 	result := map[string]bool{}
 
-	if cfg == nil || cfg.Raw == nil {
+	if ss.Cfg == nil || ss.Cfg.Raw == nil {
 		return result
 	}
 
@@ -250,7 +250,7 @@ func (ss *SocialService) GetOAuthProviders(cfg *setting.Cfg) map[string]bool {
 			name = grafanaCom
 		}
 
-		sec := cfg.Raw.Section("auth." + name)
+		sec := ss.Cfg.Raw.Section("auth." + name)
 		if sec == nil {
 			continue
 		}
@@ -260,7 +260,7 @@ func (ss *SocialService) GetOAuthProviders(cfg *setting.Cfg) map[string]bool {
 	return result
 }
 
-func (ss *SocialService) GetOAuthHttpClient(name string) (*http.Client, error) {
+func (ss *Service) GetOAuthHttpClient(name string) (*http.Client, error) {
 	if setting.OAuthService == nil {
 		return nil, fmt.Errorf("OAuth not enabled")
 	}
@@ -305,10 +305,10 @@ func (ss *SocialService) GetOAuthHttpClient(name string) (*http.Client, error) {
 	return oauthClient, nil
 }
 
-func (ss *SocialService) GetConnector(name string) (SocialConnector, error) {
+func (ss *Service) GetConnector(name string) (SocialConnector, error) {
 	// The socialMap keys don't have "oauth_" prefix, but everywhere else in the system does
 	provider := strings.TrimPrefix(name, "oauth_")
-	connector, ok := SocialMap[provider]
+	connector, ok := ss.socialMap[provider]
 	if !ok {
 		return nil, fmt.Errorf("failed to find oauth provider for %q", name)
 	}
