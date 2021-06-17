@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/grafana/grafana/pkg/cmd/grafana-cli/utils"
 	"github.com/grafana/grafana/pkg/schema"
@@ -11,21 +12,22 @@ import (
 	"github.com/sdboyer/cuetsy/encoder"
 )
 
+var generatedFileName = 0
+
 func (cmd Command) generateDashboardTypeScripts(c utils.CommandLine) error {
 	dest := c.String("dest")
-	from := c.String("from")
-	if err := generateTypeScriptFromCUE(from, dest, paths, load.BaseDashboardFamily); err != nil {
+	if err := generateTypeScriptFromCUE(dest, paths, load.BaseDashboardFamily); err != nil {
 		return err
 	}
 
-	if err := generateTypeScriptFromCUE(from, dest, paths, load.DistDashboardFamily); err != nil {
+	if err := generateTypeScriptFromCUE(dest, paths, load.DistDashboardFamily); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func generateTypeScriptFromCUE(from string, dest string, p load.BaseLoadPaths, loader func(p load.BaseLoadPaths) (schema.VersionedCueSchema, error)) error {
+func generateTypeScriptFromCUE(dest string, p load.BaseLoadPaths, loader func(p load.BaseLoadPaths) (schema.VersionedCueSchema, error)) error {
 	dash, err := loader(p)
 	if err != nil {
 		return err
@@ -36,14 +38,13 @@ func generateTypeScriptFromCUE(from string, dest string, p load.BaseLoadPaths, l
 	if err != nil {
 		return err
 	}
-	writeTypeScriptFiles(from, dest, string(b))
-
+	writeTypeScriptFiles(dest, string(b))
 	return nil
 }
 
-func writeTypeScriptFiles(from string, dest string, content string) error {
-	fileName := filepath.Base(from)
-	fd, err := os.Create(filepath.Join(dest, fileName[:len(fileName)-3]) + "ts")
+func writeTypeScriptFiles(dest string, content string) error {
+	fd, err := os.Create(filepath.Join(dest, "generatedFileName"+strconv.Itoa(generatedFileName)+"ts"))
+	generatedFileName++
 	if err != nil {
 		return err
 	}
