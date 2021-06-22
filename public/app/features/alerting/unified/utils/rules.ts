@@ -26,6 +26,7 @@ import { RULER_NOT_SUPPORTED_MSG } from './constants';
 import { hash } from './misc';
 import { capitalize } from 'lodash';
 import { State } from '../components/StateTag';
+import { GRAFANA_RULES_SOURCE_NAME } from './datasource';
 
 export function isAlertingRule(rule: Rule): rule is AlertingRule {
   return rule.type === PromRuleType.Alerting;
@@ -183,4 +184,8 @@ export function getFirstActiveAt(promRule: AlertingRule) {
     }
     return prev;
   }, null as Date | null);
+}
+
+export function ruleIdentifierToRuleSourceName(identifier: RuleIdentifier): string {
+  return isGrafanaRuleIdentifier(identifier) ? GRAFANA_RULES_SOURCE_NAME : identifier.ruleSourceName;
 }

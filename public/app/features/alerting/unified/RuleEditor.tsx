@@ -12,7 +12,7 @@ import { AlertRuleForm } from './components/rule-editor/AlertRuleForm';
 import { useIsRuleEditable } from './hooks/useIsRuleEditable';
 import { useUnifiedAlertingSelector } from './hooks/useUnifiedAlertingSelector';
 import { fetchExistingRuleAction } from './state/actions';
-import { parseRuleIdentifier } from './utils/rules';
+import { parseRuleIdentifier, ruleIdentifierToRuleSourceName } from './utils/rules';
 
 interface ExistingRuleEditorProps {
   identifier: RuleIdentifier;
@@ -22,7 +22,7 @@ const ExistingRuleEditor: FC<ExistingRuleEditorProps> = ({ identifier }) => {
   useCleanup((state) => state.unifiedAlerting.ruleForm.existingRule);
   const { loading, result, error, dispatched } = useUnifiedAlertingSelector((state) => state.ruleForm.existingRule);
   const dispatch = useDispatch();
-  const { isEditable } = useIsRuleEditable(result?.rule);
+  const { isEditable } = useIsRuleEditable(ruleIdentifierToRuleSourceName(identifier), result?.rule);
 
   useEffect(() => {
     if (!dispatched) {
