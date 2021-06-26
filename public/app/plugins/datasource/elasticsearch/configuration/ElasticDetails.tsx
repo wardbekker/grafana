@@ -144,7 +144,7 @@ export const ElasticDetails = ({ value, onChange }: Props) => {
         </div>
         <div className="gf-form-inline">
           <Switch
-            label="X-Pack Enabled"
+            label="X-Pack enabled"
             labelClass="width-10"
             checked={value.jsonData.xpack || false}
             onChange={jsonDataSwitchChangeHandler('xpack', value, onChange)}
@@ -154,7 +154,7 @@ export const ElasticDetails = ({ value, onChange }: Props) => {
         {gte(value.jsonData.esVersion, '6.6.0') && value.jsonData.xpack && (
           <div className="gf-form-inline">
             <Switch
-              label="Include Frozen Indices"
+              label="Include frozen indices"
               labelClass="width-10"
               checked={value.jsonData.includeFrozen ?? false}
               onChange={jsonDataSwitchChangeHandler('includeFrozen', value, onChange)}
