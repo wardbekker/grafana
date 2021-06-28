@@ -465,6 +465,20 @@ func (hs *HTTPServer) registerRoutes() {
 		adminUserRoute.Post("/:id/revoke-auth-token", authorize(reqGrafanaAdmin, accesscontrol.ActionUsersAuthTokenUpdate, userIDScope), bind(models.RevokeAuthTokenCmd{}), routing.Wrap(hs.AdminRevokeUserAuthToken))
 	})
 
+	// | Endpoint                  | Method | Description |
+	// | ------------------------- | ---- | ----------- |
+	// | /api/catalog              | GET  | Get the full list of catalog services |
+	// | /api/catalog/team/:name   | GET  | Get the full list of services for a team |
+	// | /api/catalog/:id          | GET  | Get a single service |
+	// | /api/catalog/teams        | GET  | Get a single service |
+
+	r.Group("/api/catalog", func(router routing.RouteRegister) {
+		router.Get("/", routing.Wrap(hs.HandleGetCatalog))
+		router.Get("/team/:name")
+		router.Get("/:id")
+		router.Get("/teams")
+	})
+
 	// rendering
 	r.Get("/render/*", reqSignedIn, hs.RenderToPng)
 

@@ -487,6 +487,12 @@ export function getAppRoutes(): RouteDescriptor[] {
         () => import(/* webpackChunkName: "LibraryPanelsPage"*/ 'app/features/library-panels/LibraryPanelsPage')
       ),
     },
+    {
+      path: '/catalog',
+      component: SafeDynamicImport(
+        () => import(/* webpackChunkName: "CatalogPanelsPage"*/ 'app/features/catalog/views/CatalogPage')
+      ),
+    },
     ...extraRoutes,
     {
       path: '/*',

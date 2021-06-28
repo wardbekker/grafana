@@ -15,6 +15,7 @@ import organizationReducers from 'app/features/org/state/reducers';
 import ldapReducers from 'app/features/admin/state/reducers';
 import templatingReducers from 'app/features/variables/state/reducers';
 import importDashboardReducers from 'app/features/manage-dashboards/state/reducers';
+import catalogReducers from 'app/features/catalog/state/reducers';
 
 const rootReducers = {
   ...sharedReducers,
@@ -26,6 +27,7 @@ const rootReducers = {
   ...exploreReducers,
   ...pluginReducers,
   ...dataSourcesReducers,
+  ...catalogReducers,
   ...usersReducers,
   ...userReducers,
   ...organizationReducers,
