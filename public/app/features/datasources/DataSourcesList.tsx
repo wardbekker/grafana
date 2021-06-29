@@ -18,7 +18,7 @@ export const DataSourcesList: FC<Props> = ({ dataSources, layoutMode }) => {
     <ul className={styles.list}>
       {dataSources.map((dataSource, index) => {
         return (
-          <li key={dataSource.id}>
+          <li key={dataSource.id} className={styles.listItem}>
             <Card heading={dataSource.name} href={`datasources/edit/${dataSource.uid}`}>
               <Card.Figure>
                 <img src={dataSource.typeLogoUrl} alt={dataSource.name} />
@@ -44,6 +44,11 @@ const getStyles = () => {
   return {
     list: css`
       list-style: none;
+    `,
+    listItem: css`
+      display: inline-block;
+      width: 30%;
+      margin-left: 8px;
     `,
   };
 };
