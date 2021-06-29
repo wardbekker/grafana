@@ -2,7 +2,7 @@ export type Catalog = CatalogService[];
 
 export interface CatalogService {
   name: string;
-  components: CatalogComponent[];
+  components: ServiceComponent[];
 }
 
 export type CatalogLabels = {
@@ -20,13 +20,13 @@ export interface CatalogPod {
   status: CatalogPodStatus;
 }
 
-export interface CatalogComponent {
+export interface ServiceComponent {
   name: string;
-  labels: CatalogLabels;
+  labels?: CatalogLabels;
   teams: string[];
   namespace: string;
   address: string;
-  catalogPod: CatalogPod[];
+  pods?: CatalogPod[];
   external: boolean;
 }
 

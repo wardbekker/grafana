@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { hot } from 'react-hot-loader';
 import { connect } from 'react-redux';
-import { Themeable2, withTheme2 } from '@grafana/ui';
+import { CustomScrollbar, Themeable2, withTheme2 } from '@grafana/ui';
 import { StoreState } from 'app/types';
 import { loadCatalog } from '../state/actions';
 import { Catalog } from 'app/types/catalog';
+import ServiceComponent from '../components/ServiceComponent';
 
 interface Props extends Themeable2 {
   name: string;
@@ -20,19 +21,19 @@ export const UnthemedCatalogPage = (props: Props) => {
 
   console.log(props.catalog);
   return (
-    <>
+    <CustomScrollbar autoHeightMin={'100%'}>
       <h2>catalog</h2>
       {props.catalog.map((svc, key) => {
         return (
           <div key={key}>
             <h2>Service: {svc.name}</h2>
             {svc.components.map((cmp, i) => {
-              return <h3 key={i}>Component: {cmp.name}</h3>;
+              return <ServiceComponent component={cmp} key={i} />;
             })}
           </div>
         );
       })}
-    </>
+    </CustomScrollbar>
   );
 };
 

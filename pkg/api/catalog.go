@@ -9,7 +9,7 @@ import (
 var DemoCatalog = dtos.Catalog{
 	{
 		Name: "cart",
-		Components: []dtos.CatalogComponent{
+		Components: []dtos.ServiceComponent{
 			{
 				Name: "cart-api",
 				Labels: map[string]string{
@@ -79,7 +79,7 @@ var DemoCatalog = dtos.Catalog{
 	},
 	{
 		Name: "frontend",
-		Components: []dtos.CatalogComponent{
+		Components: []dtos.ServiceComponent{
 			{
 				Name: "nginx",
 				Labels: map[string]string{

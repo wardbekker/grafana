@@ -20,7 +20,7 @@ type Catalog []CatalogService
 
 type CatalogService struct {
 	Name       string             `json:"name,omitempty"`
-	Components []CatalogComponent `json:"components,omitempty"`
+	Components []ServiceComponent `json:"components,omitempty"`
 }
 
 type CatalogLabels map[string]string
@@ -38,7 +38,7 @@ type CatalogPod struct {
 	Status CatalogPodStatus `json:"status,omitempty"`
 }
 
-type CatalogComponent struct {
+type ServiceComponent struct {
 	Name      string        `json:"name,omitempty"`
 	Labels    CatalogLabels `json:"labels,omitempty"`
 	Teams     []string      `json:"teams,omitempty"`
