@@ -268,3 +268,53 @@ func (r *SQLAnnotationRepo) Delete(params *annotations.DeleteParams) error {
 		return nil
 	})
 }
+
+func (r *SQLAnnotationRepo) FindTags(query *annotations.TagsQuery) ([]*annotations.TagsDTO, error) {
+	if query.Limit == 0 {
+		query.Limit = 100
+	}
+
+	var sql bytes.Buffer
+	params := make([]interface{}, 0)
+	tagKey := `tag.` + dialect.Quote("key")
+	tagValue := `tag.` + dialect.Quote("value")
+
+	sql.WriteString(`
+		SELECT
+			` + tagKey + `,
+			` + tagValue + `,
+			count(*) as count
+		FROM tag
+		INNER JOIN annotation_tag ON tag.id = annotation_tag.tag_id
+		INNER JOIN annotation ON annotation_tag.annotation_id = annotation.id
+`)
+
+	sql.WriteString(`WHERE annotation.org_id = ?`)
+	params = append(params, query.OrgID)
+
+	sql.WriteString(` AND (` + tagKey + ` ` + dialect.LikeStr() + ` ? OR ` + tagValue + ` ` + dialect.LikeStr() + ` ?)`)
+	params = append(params, `%`+query.Tag+`%`, `%`+query.Tag+`%`)
+
+	sql.WriteString(` GROUP BY ` + tagKey + `,` + tagValue)
+	sql.WriteString(` ORDER BY ` + tagKey + `,` + tagValue)
+	sql.WriteString(` ` + dialect.Limit(query.Limit))
+
+	var items []*annotations.Tags
+	if err := x.SQL(sql.String(), params...).Find(&items); err != nil {
+		return nil, err
+	}
+
+	tags := make([]*annotations.TagsDTO, 0)
+	for _, item := range items {
+		tag := item.Key
+		if len(item.Value) > 0 {
+			tag = item.Key + ":" + item.Value
+		}
+		tags = append(tags, &annotations.TagsDTO{
+			Tag:   tag,
+			Count: item.Count,
+		})
+	}
+
+	return tags, nil
+}
